@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:bitcoin_ticker/coin_data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +14,7 @@ class PriceScreen extends StatefulWidget {
 class _PriceScreenState extends State<PriceScreen> {
   String selectedCurrency = 'USD';
 
-  List<DropdownMenuItem> getDropdownMenuItem() {
+  DropdownButton<dynamic> androidDropdown() {
     List<DropdownMenuItem<String>> dropDownItems = [];
     for (String currency in currenciesList) {
       var newItem = DropdownMenuItem(
@@ -22,16 +24,33 @@ class _PriceScreenState extends State<PriceScreen> {
 
       dropDownItems.add(newItem);
     }
-    return dropDownItems;
+    return DropdownButton<dynamic>(
+        value: selectedCurrency,
+        items: dropDownItems,
+        onChanged: (value) {
+          setState(() {
+            selectedCurrency = value!;
+          });
+        });
   }
 
-  List<Widget> getPickerItems() {
+  Widget getPicker() {
+    return Platform.isIOS ? iosPicker() : androidDropdown();
+  }
+
+  CupertinoPicker iosPicker() {
     List<Text> pickerItems = [];
     for (String currency in currenciesList) {
       Text(currency);
       pickerItems.add(Text(currency));
     }
-    return pickerItems;
+    return CupertinoPicker(
+      itemExtent: 32.0,
+      onSelectedItemChanged: (selectedIndex) {
+        print(selectedIndex);
+      },
+      children: pickerItems,
+    );
   }
 
   @override
@@ -70,25 +89,10 @@ class _PriceScreenState extends State<PriceScreen> {
             alignment: Alignment.center,
             padding: EdgeInsets.only(bottom: 30.0),
             color: Colors.lightBlue,
-            child: CupertinoPicker(
-              itemExtent: 32.0,
-              onSelectedItemChanged: (selectedIndex) {
-                print(selectedIndex);
-              },
-              children: getPickerItems(),
-            ),
+            child: getPicker(),
           ),
         ],
       ),
     );
   }
 }
-
-// DropdownButton<dynamic>(
-// value: selectedCurrency,
-// items: getDropdownMenuItem(),
-// onChanged: (value) {
-// setState(() {
-// selectedCurrency = value!;
-// });
-// }),
